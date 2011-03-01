@@ -1,0 +1,32 @@
+Google Apps User-Level Email Routing Trollusk
+=============================================
+
+A library for making programmatic changes to user-level email routing settings on Google Apps.
+Uses HtmlUnit to retrieve and interact with pages in the Google Apps admin console.
+
+Is this a horrible idea? Unequivocally yes.
+
+However, no official API for these settings exists as of this writing:
+http://code.google.com/a/google.com/p/apps-api-issues/issues/detail?id=2293
+
+Necessity is thus the mother of abomination.
+
+Java command line
+-----------------
+
+  java -jar target/google-apps-trollusk-1.0-SNAPSHOT-jar-with-dependencies.jar <domain> <username>
+
+Supply a password, then commands.
+
+Ruby
+----
+
+Add a line to your Gemfile:
+
+  gem 'google-apps-provision', '0.0.1', :git => 'git://github.com/meet/google-apps-provision.git'
+
+Development
+===========
+
+ - Generate Eclipse IDE files with `mvn eclipse:eclipse -DdownloadJavadocs=true`
+ - Build self-contained executable jar with `mvn package`
