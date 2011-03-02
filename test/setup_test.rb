@@ -5,7 +5,7 @@ require 'google-apps-trollusk'
 
 require 'test/unit'
 
-class UserTest < Test::Unit::TestCase
+class SetupTest < Test::Unit::TestCase
   
   T = GoogleApps::Trollusk
   
@@ -22,6 +22,11 @@ class UserTest < Test::Unit::TestCase
     assert_equal T::User.new('bob', true, false, [ T::Route.new('user@example.com', false, false),
                                                    T::Route.new('mail@example.net', true, true) ]),
                  T.parse('UserEmailRouting<bob:inbox,-,[UserEmailRoute<user@example.com,-,false>, UserEmailRoute<mail@example.net,rewrite,true>]>')
+  end
+  
+  def test_obfuscate
+    T.connect_with :obfuscation => 'Zipperump-a-Zoo'
+    assert_equal 'super_secret!', T.obfuscate(T.obfuscate('super_secret!'))
   end
   
 end

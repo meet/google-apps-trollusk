@@ -10,17 +10,32 @@ module GoogleApps
     class Route < Struct.new(:destination, :rewrite_to?, :enabled?)
     end
     
+    @@connection_params = { }
+    
+    # Add connection parameters.
+    def self.connect_with(connection_params)
+      @@connection_params.merge!(connection_params)
+    end
+    
     # Log in to the user-level email routing admin console.
-    def self.connect(domain, username, password)
+    def self.connect
       path = File.expand_path('../../', __FILE__)
       doc = REXML::Document.new(File.new("#{path}/pom.xml"))
       name = doc.elements['project/artifactId'].text
       version = doc.elements['project/version'].text
+      domain = @@connection_params[:domain]
+      username = @@connection_params[:username]
       cmd = "java -jar '#{path}/target/#{name}-#{version}-jar-with-dependencies.jar' '#{domain}' '#{username}'"
       IO.popen(cmd, 'r+') do |io|
-        yield self.new(io, password)
+        yield self.new(io, @@connection_params[:password])
         io.close_write
       end
+    end
+    
+    def self.obfuscate(password)
+      password.bytes.zip(@@connection_params[:obfuscation].bytes).map do |p, q|
+        p ^ q
+      end .map(&:chr).join
     end
     
     def self.parse(user)
@@ -36,7 +51,7 @@ module GoogleApps
     
     def initialize(io, password)
       raise 'Expected password prompt' unless io.gets.strip == 'password'
-      io.puts password
+      io.puts self.class.obfuscate(password)
       raise 'Expected ok' unless io.gets.strip == 'ok'
       @io = io
     end

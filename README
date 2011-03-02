@@ -25,6 +25,13 @@ Add a line to your Gemfile:
 
   gem 'google-apps-provision', '0.0.1', :git => 'git://github.com/meet/google-apps-provision.git'
 
+Then (e.g. in a Rails initializer) specify:
+
+  GoogleApps::Trollusk.connect_with :domain => 'example.com',
+                                    :username => '...',
+                                    :password => '...',
+                                    :obfuscation => '...'
+
 Development
 ===========
 
