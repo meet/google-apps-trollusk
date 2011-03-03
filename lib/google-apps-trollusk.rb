@@ -25,7 +25,10 @@ module GoogleApps
       version = doc.elements['project/version'].text
       domain = @@connection_params[:domain]
       username = @@connection_params[:username]
-      cmd = "java -jar '#{path}/target/#{name}-#{version}-jar-with-dependencies.jar' '#{domain}' '#{username}'"
+      jar = "target/#{name}-#{version}-jar-with-dependencies.jar"
+      
+      raise TrolluskError.new("Missing #{jar}") unless File.exists? "#{path}/#{jar}"
+      cmd = "java -jar '#{path}/#{jar}' '#{domain}' '#{username}'"
       IO.popen(cmd, 'r+') do |io|
         yield self.new(io, @@connection_params[:password])
         io.close_write
@@ -50,9 +53,16 @@ module GoogleApps
     end
     
     def initialize(io, password)
-      raise 'Expected password prompt' unless io.gets.strip == 'password'
+      class << io
+        def gets
+          str = super
+          raise TrolluskError.new('Unexpected end of IO') unless str
+          return str
+        end
+      end
+      raise TrolluskError.new('Authentication missing') unless io.gets.strip == 'password'
       io.puts self.class.obfuscate(password)
-      raise 'Expected ok' unless io.gets.strip == 'ok'
+      raise TrolluskError.new('Authentication failed') unless io.gets.strip == 'ok'
       @io = io
     end
     
@@ -94,6 +104,9 @@ module GoogleApps
         self.class.parse(@io.gets.strip)
       end
       
+  end
+  
+  class TrolluskError < RuntimeError
   end
   
 end
