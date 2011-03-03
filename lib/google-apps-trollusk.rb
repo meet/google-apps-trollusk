@@ -19,6 +19,8 @@ module GoogleApps
     
     # Log in to the user-level email routing admin console.
     def self.connect
+      yield MockTrollusk.new and return if @@connection_params[:mock]
+      
       path = File.expand_path('../../', __FILE__)
       doc = REXML::Document.new(File.new("#{path}/pom.xml"))
       name = doc.elements['project/artifactId'].text
@@ -102,6 +104,25 @@ module GoogleApps
       def cmd(string)
         @io.puts(string)
         self.class.parse(@io.gets.strip)
+      end
+      
+  end
+  
+  class MockTrollusk < Trollusk
+    
+    @@commands = [ ]
+    
+    def self.commands
+      @@commands
+    end
+    
+    def initialize
+    end
+    
+    private
+      
+      def cmd(string)
+        @@commands << string
       end
       
   end
