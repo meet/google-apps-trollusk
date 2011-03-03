@@ -11,6 +11,13 @@ http://code.google.com/a/google.com/p/apps-api-issues/issues/detail?id=2293
 
 Necessity is thus the mother of abomination.
 
+Setup
+-----
+
+After `bundle install`ing, go to the root of the gem and build the self-contained executable jar with:
+
+  mvn package
+
 Java command line
 -----------------
 
@@ -32,8 +39,8 @@ Then (e.g. in a Rails initializer) specify:
                                     :password => '...',
                                     :obfuscation => '...'
 
+
 Development
 ===========
 
- - Generate Eclipse IDE files with `mvn eclipse:eclipse -DdownloadJavadocs=true`
- - Build self-contained executable jar with `mvn package`
+Generate Eclipse IDE files with `mvn eclipse:eclipse -DdownloadJavadocs=true`
