@@ -5,9 +5,9 @@ module GoogleApps
   # He only wants the letters for the stamps!
   class Trollusk
     
-    class User < Struct.new(:username, :deliver_to_inbox?, :inherit_routes?, :routes)
+    class User < Struct.new(:username, :deliver_to_inbox, :inherit_routes, :routes)
     end
-    class Route < Struct.new(:destination, :rewrite_to?, :enabled?)
+    class Route < Struct.new(:destination, :rewrite_to, :enabled)
     end
     
     @@connection_params = { }
