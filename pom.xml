@@ -24,6 +24,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+      <version>1.6.11</version>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -70,6 +76,29 @@
             <phase>package</phase>
             <goals>
               <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>aspectj-maven-plugin</artifactId>
+        <version>1.3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <weaveDependencies>
+            <weaveDependency>
+              <groupId>net.sourceforge.htmlunit</groupId>
+              <artifactId>htmlunit</artifactId>
+            </weaveDependency>
+          </weaveDependencies>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
             </goals>
           </execution>
         </executions>
