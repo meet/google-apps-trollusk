@@ -1,3 +1,5 @@
+package edu.mit.meet.googleapps;
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
