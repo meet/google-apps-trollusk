@@ -211,8 +211,8 @@ module GoogleApps
       t.close
     end
     
-    def initialize(domain, username, password)
-      @c = Connection.new(domain, username, password)
+    def initialize(domain, username, password, headless)
+      @c = Connection.new(domain, username, password, headless)
     end
     
     def get(username)
