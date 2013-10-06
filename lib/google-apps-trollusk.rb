@@ -206,7 +206,7 @@ module GoogleApps
       password = @@connection_params[:password]
       headless = @@connection_params[:headless]
       
-      t = self.new(domain, username, password)
+      t = self.new(domain, username, password, headless)
       yield t
       t.close
     end
