@@ -54,7 +54,7 @@ module GoogleApps
       #Set whether email is delivered to the GMail inbox
       def deliver_to_inbox(inbox)
         deliver_to_inbox_elt.set inbox
-        @deliver_to_inbox = inbox
+        # @deliver_to_inbox = inbox
       end
       
       # Add a routing destination.
@@ -69,7 +69,7 @@ module GoogleApps
         route_rewrite_to_elt(idx).set true
         route_destination_elt(idx).set destination
         
-        @routes.push(Route.new(destination, true, true))
+        # @routes.push(Route.new(destination, true, true))
       end
 
       def remove_route(old_destination)
@@ -78,7 +78,7 @@ module GoogleApps
         return false if @routes.nil?
         idx = idx + 1
         remove_destination_elt(idx).click
-        @routes.delete_at(idx - 1)
+        # @routes.delete_at(idx - 1)
         true
       end
       
@@ -91,7 +91,7 @@ module GoogleApps
         # Find the index of the destination
         idx = @routes.find_index{|r| r.destination == old_destination} + 1
         route_destination_elt(idx).set new_destination
-        @routes[idx].destination = new_destination
+        # @routes[idx].destination = new_destination
       end
       
       def save_changes
@@ -99,6 +99,7 @@ module GoogleApps
         return false unless elt.exists?
         elt.click
         raise TrolluskError.new("Routing error.") if route_error_elt.exists?
+        load_from_conn
         true
       end
       
