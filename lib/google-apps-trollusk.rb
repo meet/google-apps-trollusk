@@ -225,28 +225,28 @@ module GoogleApps
     
     # Set whether mail is delivered to the Google Apps inbox.
     def deliver_to_inbox(username, inbox)
-      u = get_user(username)
+      u = get(username)
       u.deliver_to_inbox inbox
       u.save_changes
     end
     
     # Add a routing destination.
     def add(username, destination)
-      u = get_user(username)
+      u = get(username)
       u.add_route(destination)
       u.save_changes
     end
     
     # Replace a routing destination.
     def update(username, old_destination, new_destination)
-      u = get_user(username)
+      u = get(username)
       u.update_route(old_destination, new_destination)
       u.save_changes
     end
     
     # Remove a routing destination.
     def remove(username, destination)
-      u = get_user(username)
+      u = get(username)
       u.remove_route(destination)
       u.save_changes
     end
@@ -254,7 +254,7 @@ module GoogleApps
     # If destination_or_inbox is +'inbox'+, deliver only to inbox; otherwise,
     # deliver only to the given destination, removing any other destinations.
     def only(username, destination_or_inbox)
-      u = get_user(username)
+      u = get(username)
       if destination_or_inbox == 'inbox'
         u.deliver_to_inbox true
         u.remove_all_routes
