@@ -29,6 +29,7 @@ module GoogleApps
         
         # Wait until all the AJAX is done loading.
         @b.checkbox(:name => 'googleAppsEmailEnabled').wait_until_present
+        @b.div(:text => 'Loading...').wait_while_present
         @b
       end
       
@@ -48,12 +49,14 @@ module GoogleApps
       def initialize(username, conn)
         @username = username
         @conn = conn
+        @timeout_length = 3
         load_from_conn
       end
 
       #Set whether email is delivered to the GMail inbox
       def deliver_to_inbox(inbox)
         deliver_to_inbox_elt.set inbox
+        @has_changes = (inbox != @deliver_to_inbox)
         # @deliver_to_inbox = inbox
       end
       
@@ -68,7 +71,7 @@ module GoogleApps
         route_enabled_elt(idx).set true
         route_rewrite_to_elt(idx).set true
         route_destination_elt(idx).set destination
-        
+        @has_changes = true
         # @routes.push(Route.new(destination, true, true))
       end
 
@@ -79,11 +82,13 @@ module GoogleApps
         idx = idx + 1
         remove_destination_elt(idx).click
         # @routes.delete_at(idx - 1)
+        @has_changes = true
         true
       end
       
       def remove_all_routes
         Array.new(@routes).map{|r| remove_route(r.destination)}
+        @has_changes = true
         @routes
       end
       
@@ -91,14 +96,18 @@ module GoogleApps
         # Find the index of the destination
         idx = @routes.find_index{|r| r.destination == old_destination} + 1
         route_destination_elt(idx).set new_destination
+        @has_changes = (old_destination != new_destination)
         # @routes[idx].destination = new_destination
       end
       
       def save_changes
+        return false unless @has_changes
         elt = save_changes_elt
-        return false unless elt.exists?
+        #return false unless elt.exists?
         elt.click
         raise TrolluskError.new("Routing error.") if route_error_elt.exists?
+        # Wait until the notification saying the changes have been made pops up.
+        @b.div(:text => "Changes to this user have been saved").wait_until_present
         load_from_conn
         true
       end
@@ -113,6 +122,7 @@ module GoogleApps
       
       def load_from_conn
         ensure_user_open
+        @has_changes = false
         @deliver_to_inbox = deliver_to_inbox_elt.set?
         @inherit_routes = inherit_routes_elt.set?
         @routes = []
@@ -133,32 +143,56 @@ module GoogleApps
       
       def add_destination_elt
         ensure_user_open
-        @b.div(:xpath => "//div[.='Email routing']/ancestor::tr[1]//div[.='Add another destination']").when_present
+        begin
+          @b.div(:xpath => "//div[.='Email routing']/ancestor::tr[1]//div[.='Add another destination']").when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def save_changes_elt
         ensure_user_open
-        @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Save changes']").when_present
+        begin
+          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Save changes']").when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def discard_changes_elt
         ensure_user_open
-        @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Discard changes']").when_present
+        begin
+          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Discard changes']").when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def remove_destination_elt(idx)
         ensure_user_open
-        @b.div(:xpath => "//input[@name='routeDestination#{idx}']/ancestor::tr[1]//div[.='Remove']").when_present
+        begin
+          @b.div(:xpath => "//input[@name='routeDestination#{idx}']/ancestor::tr[1]//div[.='Remove']").when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def deliver_to_inbox_elt
         ensure_user_open
-        @b.checkbox(:name => 'googleAppsEmailEnabled').when_present
+        begin
+          @b.checkbox(:name => 'googleAppsEmailEnabled').when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def inherit_routes_elt
         ensure_user_open
-        @b.checkbox(:name => 'inheritRoutesEnabled').when_present
+        begin
+          @b.checkbox(:name => 'inheritRoutesEnabled').when_present @timeout_length
+        rescue Watir::Wait::TimeoutError => err
+          raise TrolluskError.new(err)
+        end
       end
       
       def route_enabled_elt(idx)
@@ -208,8 +242,11 @@ module GoogleApps
       headless = @@connection_params[:headless]
       
       t = self.new(domain, username, password, headless)
-      yield t
-      t.close
+      begin
+        yield t
+      ensure
+        t.close
+      end
     end
     
     def initialize(domain, username, password, headless)
