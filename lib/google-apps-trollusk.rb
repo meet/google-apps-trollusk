@@ -232,13 +232,19 @@ module GoogleApps
       @@connection_params.merge!(connection_params)
     end
     
+    def self.obfuscate(password)
+      password.bytes.zip(@@connection_params[:obfuscation].bytes).map do |p, q|
+        p ^ q
+      end .map(&:chr).join
+    end
+
     # Log in to the user-level email routing admin console.
     def self.connect
       yield MockTrollusk.new and return if @@connection_params[:mock]
       
       domain = @@connection_params[:domain]
       username = @@connection_params[:username]
-      password = @@connection_params[:password]
+      password = obfuscate(@@connection_params[:password])
       headless = @@connection_params[:headless]
       
       t = self.new(domain, username, password, headless)
