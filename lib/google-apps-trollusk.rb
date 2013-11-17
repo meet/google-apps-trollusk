@@ -14,7 +14,7 @@ module GoogleApps
           @h = Headless.new
           @h.start
         end
-        @b = Watir::Browser.start "https://www.google.com/a/cpanel/#{domain}"#, :chrome#, :path => '/usr/lib64/chromium-browser/chromium-browser'
+        @b = Watir::Browser.start "https://www.google.com/a/cpanel/#{domain}"
         @b.text_field(:id => 'Email').set "#{username}@#{domain}"
         @b.text_field(:id => 'Passwd').set password
         @b.button(:id => 'signIn').click
@@ -24,12 +24,22 @@ module GoogleApps
       end
       
       def open(username)
-        @b.goto "#{@cpanel}Organization?userEmail=#{username}@#{@domain}" unless @current_user == username
-        @current_user = username
-        
-        # Wait until all the AJAX is done loading.
-        @b.checkbox(:name => 'googleAppsEmailEnabled').wait_until_present
+        return @b if @current_user == username
+        @b.goto "#{@cpanel}AdminHome#Search/filter=USERS&query=#{username}@#{@domain}"
+        # Wait until all the AJAX is done.
+        @b.div(:class => 'gwt-Label', :text => "#{username}@#{@domain}").wait_until_present
+        # Now click on the link to open the user.
+        l = @b.link(:xpath => "//div[.='#{username}@#{@domain}']/ancestor::tr[1]//a[1]")
+        l.click
+        # Wait for the profile div to be present and then click on it.
+        d = @b.div(:text => "Profile")
+        d.wait_until_present
+        d.click
+        # Now wait for the profile window to open.
+        @b.div(:text => "Email routing").wait_until_present
         @b.div(:text => 'Loading...').wait_while_present
+        @current_user = username
+
         @b
       end
       
@@ -49,7 +59,7 @@ module GoogleApps
       def initialize(username, conn)
         @username = username
         @conn = conn
-        @timeout_length = 3
+        @timeout_length = 6
         load_from_conn
       end
 
@@ -144,7 +154,7 @@ module GoogleApps
       def add_destination_elt
         ensure_user_open
         begin
-          @b.div(:xpath => "//div[.='Email routing']/ancestor::tr[1]//div[.='Add another destination']").when_present @timeout_length
+          @b.div(:xpath => "//div[.='Email routing']/ancestor::tr[1]//div[.='Add another destination']")#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
@@ -153,7 +163,7 @@ module GoogleApps
       def save_changes_elt
         ensure_user_open
         begin
-          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Save changes']").when_present @timeout_length
+          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Save changes']")#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
@@ -162,7 +172,7 @@ module GoogleApps
       def discard_changes_elt
         ensure_user_open
         begin
-          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Discard changes']").when_present @timeout_length
+          @b.div(:xpath => "//div[contains(@class, 'pendingPanel')]//div[.='Discard changes']")#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
@@ -171,7 +181,7 @@ module GoogleApps
       def remove_destination_elt(idx)
         ensure_user_open
         begin
-          @b.div(:xpath => "//input[@name='routeDestination#{idx}']/ancestor::tr[1]//div[.='Remove']").when_present @timeout_length
+          @b.div(:xpath => "//input[@name='routeDestination#{idx}']/ancestor::tr[1]//div[.='Remove']")#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
@@ -180,7 +190,7 @@ module GoogleApps
       def deliver_to_inbox_elt
         ensure_user_open
         begin
-          @b.checkbox(:name => 'googleAppsEmailEnabled').when_present @timeout_length
+          @b.checkbox(:name => 'googleAppsEmailEnabled')#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
@@ -189,7 +199,7 @@ module GoogleApps
       def inherit_routes_elt
         ensure_user_open
         begin
-          @b.checkbox(:name => 'inheritRoutesEnabled').when_present @timeout_length
+          @b.checkbox(:name => 'inheritRoutesEnabled')#.when_present @timeout_length
         rescue Watir::Wait::TimeoutError => err
           raise TrolluskError.new(err)
         end
